@@ -1,0 +1,22 @@
+# lambda
+node_modules
+dist
+
+# terraform 
+.terraform
+
+# mac
+.DS_Store
+
+#sam
+.aws-sam
+.npm
+
+.idea
+.npm
+
+#Env
+.env
+
+#output lambda
+output.json

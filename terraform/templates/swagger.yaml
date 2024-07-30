@@ -1,0 +1,78 @@
+swagger: "2.0"
+info:
+  version: "1.0"
+  title: REST API AWS TERRAFORM
+
+
+securityDefinitions:
+  CognitoUserPool:
+    type: "apiKey"
+    name: "Authorization"
+    in: "header"
+    x-amazon-apigateway-authtype: "cognito_user_pools"
+    x-amazon-apigateway-authorizer:
+      type: "cognito_user_pools"
+      providerARNs:
+        - "${cognito_user_pool_arn}"
+
+paths:
+  /users:
+    options:
+      summary: CORS support
+      description: Send a preflight request to check for CORS
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      responses:
+        '200':
+          description: CORS response
+          headers:
+            Access-Control-Allow-Origin:
+              type: string
+              default: "'*'"  # Ideally, replace '*' with your specific allowed origins
+            Access-Control-Allow-Methods:
+              type: string
+              default: "'GET'"
+            Access-Control-Allow-Headers:
+              type: string
+              default: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      x-amazon-apigateway-integration:
+        type: mock
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        responses:
+          default:
+            statusCode: '200'
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"  # Same here for specific origins
+              method.response.header.Access-Control-Allow-Methods: "'GET'"
+              method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            responseTemplates:
+              application/json: ''
+    get:
+      summary: Fetch the users
+      security:
+        - CognitoUserPool: ["aws.cognito.signin.user.admin"]
+      x-amazon-apigateway-integration:
+        uri: "arn:aws:apigateway:us-west-2:lambda:path/2015-03-31/functions/${userLambdaArn}/invocations"
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'" # Replace '*' with your actual allowed origin
+        httpMethod: "POST"
+        type: "aws_proxy"
+      responses:
+        200:
+          description: "Successful response"
+          headers:
+            Access-Control-Allow-Origin:
+              type: string
+              default: "'*'" # Ideally, replace '*' with your specific allowed origins
+            Access-Control-Allow-Methods:
+              type: string
+              default: "'GET'"
+            Access-Control-Allow-Headers:
+              type: string
+              default: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
